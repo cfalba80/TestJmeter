@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.8" jmeter="2.13 r1665067">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Load&amp;ReviewReceipts" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+        <stringProp name="delimiter">,</stringProp>
+        <stringProp name="fileEncoding"></stringProp>
+        <stringProp name="filename">\configuration.csv</stringProp>
+        <boolProp name="quotedData">true</boolProp>
+        <boolProp name="recycle">true</boolProp>
+        <stringProp name="shareMode">shareMode.all</stringProp>
+        <boolProp name="stopThread">false</boolProp>
+        <stringProp name="variableNames">vHost,vPort,vPlanningDB,vACCId</stringProp>
+      </CSVDataSet>
+      <hashTree/>
+      <MongoSourceElement guiclass="TestBeanGUI" testclass="MongoSourceElement" testname="MongoDB Source Config at Receipt" enabled="true">
+        <stringProp name="connection">localhost</stringProp>
+        <stringProp name="source">mongoSourceReceipt</stringProp>
+        <boolProp name="autoConnectRetry">false</boolProp>
+        <intProp name="connectionsPerHost">10</intProp>
+        <intProp name="connectTimeout">0</intProp>
+        <longProp name="maxAutoConnectRetryTime">0</longProp>
+        <intProp name="maxWaitTime">120000</intProp>
+        <intProp name="socketTimeout">0</intProp>
+        <boolProp name="socketKeepAlive">false</boolProp>
+        <intProp name="threadsAllowedToBlockForConnectionMultiplier">5</intProp>
+        <boolProp name="safe">false</boolProp>
+        <boolProp name="fsync">false</boolProp>
+        <boolProp name="waitForJournaling">false</boolProp>
+        <intProp name="writeOperationNumberOfServers">0</intProp>
+        <intProp name="writeOperationTimeout">0</intProp>
+        <boolProp name="continueOnInsertError">false</boolProp>
+      </MongoSourceElement>
+      <hashTree/>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${vHost}</stringProp>
+        <stringProp name="HTTPSampler.port">${vPort}</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        <stringProp name="HTTPSampler.protocol"></stringProp>
+        <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+        <stringProp name="HTTPSampler.path"></stringProp>
+        <stringProp name="HTTPSampler.concurrentPool">4</stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set For Receipts" enabled="true">
+        <stringProp name="delimiter">,</stringProp>
+        <stringProp name="fileEncoding"></stringProp>
+        <stringProp name="filename">\receipt_creation.csv</stringProp>
+        <boolProp name="quotedData">true</boolProp>
+        <boolProp name="recycle">false</boolProp>
+        <stringProp name="shareMode">shareMode.thread</stringProp>
+        <boolProp name="stopThread">true</boolProp>
+        <stringProp name="variableNames">vReceiptId,vAutoApproved,vReceiptStatus,vSizeApproved,vPackApproved</stringProp>
+      </CSVDataSet>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Setting up Receipts" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">100</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1436889853000</longProp>
+        <longProp name="ThreadGroup.end_time">1436889853000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <MongoScriptSampler guiclass="TestBeanGUI" testclass="MongoScriptSampler" testname="create_receipt" enabled="true">
+          <stringProp name="source">mongoSourceReceipt</stringProp>
+          <stringProp name="database">${vPlanningDB}</stringProp>
+          <stringProp name="username"></stringProp>
+          <stringProp name="password"></stringProp>
+          <stringProp name="script">db.receipts.insert(
+{
+    &quot;_id&quot; : &quot;${vReceiptId}&quot;,
+    &quot;inputs&quot; : {
+        &quot;plannedCustomerChoiceId&quot; : &quot;ebba02c4-bda9-4999-9425-72748f4bedd7&quot;,
+        &quot;assortedCustomerChoiceId&quot; : &quot;6668a3cf-776a-46ae-9d26-8cfef469a5c3&quot;,
+        &quot;originalPackingParameters&quot; : {
+            &quot;businessStrategyParameters&quot; : {
+                &quot;packDefinitions&quot; : {
+                    &quot;outPacks&quot; : 3,
+                    &quot;globalPdLimit&quot; : 10,
+                    &quot;globalSinglePdLimit&quot; : 10,
+                    &quot;globalMultiPdLimit&quot; : 2,
+                    &quot;sizeSinglePdLimit&quot; : 2,
+                    &quot;sizeMultiPdLimit&quot; : 2,
+                    &quot;minPdUse&quot; : 1,
+                    &quot;minPdUseUnitsPerc&quot; : 0.05
+                },
+                &quot;minMaxContribution&quot; : {
+                    &quot;minPercBulk&quot; : 0,
+                    &quot;maxPercBulk&quot; : 1,
+                    &quot;minPercSingle&quot; : 0,
+                    &quot;maxPercSingle&quot; : 1,
+                    &quot;minPercMulti&quot; : 0,
+                    &quot;maxPercMulti&quot; : 1,
+                    &quot;maxFullCarton&quot; : 10000,
+                    &quot;minFullCarton&quot; : 0,
+                    &quot;minPercUnitsFullCarton&quot; : 0,
+                    &quot;maxPercUnitsFullCarton&quot; : 1
+                },
+                &quot;packAllowance&quot; : {
+                    &quot;initialFlowBulkPdAllow&quot; : true,
+                    &quot;initialFlowSinglePdAllow&quot; : true,
+                    &quot;initialFlowMultiPdAllow&quot; : true,
+                    &quot;initialFlowAssortedPdAllow&quot; : false,
+                    &quot;replenishmentBulkPdAllow&quot; : true,
+                    &quot;replenishmentSinglePdAllow&quot; : true,
+                    &quot;replenishmentMultiPdAllow&quot; : true,
+                    &quot;replenishmentAssortedPdAllow&quot; : false
+                }
+            },
+            &quot;objectiveFunctionParameters&quot; : {
+                &quot;concurrency&quot; : {
+                    &quot;maxConcMulti&quot; : 2,
+                    &quot;maxConcAssort&quot; : 10,
+                    &quot;maxConcVisMin&quot; : 3
+                },
+                &quot;cost&quot; : {
+                    &quot;costBoxShip&quot; : 80,
+                    &quot;costPdShip&quot; : 10,
+                    &quot;costQuantityPackShip&quot; : 25,
+                    &quot;costFlexOrEfficShip&quot; : 100,
+                    &quot;costVisMinShip&quot; : 10,
+                    &quot;costBoxHand&quot; : 15,
+                    &quot;costPdHand&quot; : 15,
+                    &quot;costQuantityPackHand&quot; : 100,
+                    &quot;costFlexOrEfficHand&quot; : 100,
+                    &quot;costVisMinHand&quot; : 10,
+                    &quot;costBoxStore&quot; : 5,
+                    &quot;costPdStore&quot; : 10,
+                    &quot;costQuantityPackStore&quot; : 100,
+                    &quot;costFlexOrEfficStore&quot; : 100,
+                    &quot;costVisMinStore&quot; : 100,
+                    &quot;costFullCartonStore&quot; : 2.8,
+                    &quot;businessCostQtyBox&quot; : 1,
+                    &quot;businessCostQtyPack&quot; : 1,
+                    &quot;businessCostQtyPd&quot; : 1,
+                    &quot;businessCostVisMin&quot; : 1,
+                    &quot;costFullCartonRel&quot; : -0.35
+                },
+                &quot;optimization&quot; : {
+                    &quot;overshippingTolerance&quot; : 0,
+                    &quot;undershippingTolerance&quot; : 0
+                },
+                &quot;other&quot; : {
+                    &quot;epsilon&quot; : 0.01,
+                    &quot;alphaFactor&quot; : 2,
+                    &quot;betaFactor&quot; : 0.5,
+                    &quot;biasCorrection&quot; : 0.026
+                },
+                &quot;restrictions&quot; : {
+                    &quot;restrCapacSingle&quot; : false,
+                    &quot;restrCapacMulti&quot; : true,
+                    &quot;restrCapacAssort&quot; : true,
+                    &quot;restrPackDefVisMin&quot; : false,
+                    &quot;allowPackDefVisMin&quot; : false
+                },
+                &quot;weight&quot; : {
+                    &quot;dcHandWeight&quot; : 5,
+                    &quot;storeHandWeight&quot; : 1,
+                    &quot;shipWeight&quot; : 1,
+                    &quot;flexOverEffic&quot; : true
+                }
+            },
+            &quot;supplyChainStratParameters&quot; : {
+                &quot;boxUpperLimit&quot; : 10,
+                &quot;fullCartonSize&quot; : 7
+            },
+            &quot;complexityControlThriftParameters&quot; : {
+                &quot;complexityThreshold&quot; : NumberLong(20000),
+                &quot;reductionMaxPd&quot; : 20,
+                &quot;reductionMaxStores&quot; : 5,
+                &quot;preferenceReductionFactor&quot; : 10,
+                &quot;concurrenceReductionFactor&quot; : 20,
+                &quot;sizeReductionFactor&quot; : 10
+            }
+        }
+    },
+    &quot;status&quot; : &quot;${vReceiptStatus}&quot;,
+    &quot;receiptVisibility&quot; : &quot;PUBLIC&quot;,
+    &quot;demandType&quot; : &quot;INITIAL&quot;,
+    &quot;autoApproved&quot; : ${vAutoApproved},
+    &quot;totalReceiptUnits&quot; : &quot;6500&quot;,
+    &quot;fiscalYearWeek&quot; : {
+        &quot;fiscalYear&quot; : 2015,
+        &quot;fiscalWeek&quot; : 40
+    },
+    &quot;plannedInStoreDate&quot; : ISODate(&quot;2015-11-02T07:00:00.000Z&quot;),
+    &quot;sizeBreakout&quot; : {
+        &quot;approved&quot; : ${vSizeApproved},
+        &quot;manuallyEdited&quot; : false,
+        &quot;sizeProfileId&quot; : &quot;8b71ff8a-0b6b-43a6-89c0-1454094dd48b&quot;,
+        &quot;isCustom&quot; : false,
+        &quot;breakout&quot; : [ 
+            {
+                &quot;sizeId&quot; : &quot;fa972675-df85-422c-ab94-6d70fa50f82f&quot;,
+                &quot;quantity&quot; : &quot;4225&quot;
+            }, 
+            {
+                &quot;sizeId&quot; : &quot;99d3c895-bc14-45e5-a4d8-4eec0a8d5b2d&quot;,
+                &quot;quantity&quot; : &quot;2275&quot;
+            }
+        ],
+        &quot;packBreakout&quot; : {
+            &quot;approved&quot; : ${vPackApproved},
+            &quot;validSolverSolution&quot; : true,
+            &quot;manuallyEdited&quot; : false,
+            &quot;solverPrepacks&quot; : true,
+            &quot;breakout&quot; : [ 
+                {
+                    &quot;dCId&quot; : &quot;917b8211-1d8d-4580-8d41-77188420b172&quot;,
+                    &quot;packDefinitionId&quot; : &quot;24&quot;,
+                    &quot;packDefinition&quot; : {
+                        &quot;_id&quot; : &quot;24&quot;,
+                        &quot;packType&quot; : &quot;BULK&quot;,
+						&quot;isFullCarton&quot; : true,
+                        &quot;definition&quot; : [ 
+                            {
+                                &quot;sizeId&quot; : &quot;fa972675-df85-422c-ab94-6d70fa50f82f&quot;,
+                                &quot;quantity&quot; : &quot;1&quot;
+                            }
+                        ]
+                    },
+                    &quot;quantity&quot; : &quot;1001&quot;
+                }, 
+                {
+                    &quot;dCId&quot; : &quot;917b8211-1d8d-4580-8d41-77188420b172&quot;,
+                    &quot;packDefinitionId&quot; : &quot;32&quot;,
+                    &quot;packDefinition&quot; : {
+                        &quot;_id&quot; : &quot;32&quot;,
+                        &quot;packType&quot; : &quot;SINGLE&quot;,
+						&quot;isFullCarton&quot; : true,
+                        &quot;definition&quot; : [ 
+                            {
+                                &quot;sizeId&quot; : &quot;99d3c895-bc14-45e5-a4d8-4eec0a8d5b2d&quot;,
+                                &quot;quantity&quot; : &quot;2&quot;
+                            }
+                        ]
+                    },
+                    &quot;quantity&quot; : &quot;637&quot;
+                }, 
+                {
+                    &quot;dCId&quot; : &quot;917b8211-1d8d-4580-8d41-77188420b172&quot;,
+                    &quot;packDefinitionId&quot; : &quot;26&quot;,
+                    &quot;packDefinition&quot; : {
+                        &quot;_id&quot; : &quot;26&quot;,
+                        &quot;packType&quot; : &quot;BULK&quot;,
+						&quot;isFullCarton&quot; : true,
+                        &quot;definition&quot; : [ 
+                            {
+                                &quot;sizeId&quot; : &quot;99d3c895-bc14-45e5-a4d8-4eec0a8d5b2d&quot;,
+                                &quot;quantity&quot; : &quot;1&quot;
+                            }
+                        ]
+                    },
+                    &quot;quantity&quot; : &quot;1001&quot;
+                }, 
+                {
+                    &quot;dCId&quot; : &quot;917b8211-1d8d-4580-8d41-77188420b172&quot;,
+                    &quot;packDefinitionId&quot; : &quot;29&quot;,
+                    &quot;packDefinition&quot; : {
+                        &quot;_id&quot; : &quot;29&quot;,
+                        &quot;packType&quot; : &quot;SINGLE&quot;,
+						&quot;isFullCarton&quot; : true,
+                        &quot;definition&quot; : [ 
+                            {
+                                &quot;sizeId&quot; : &quot;fa972675-df85-422c-ab94-6d70fa50f82f&quot;,
+                                &quot;quantity&quot; : &quot;2&quot;
+                            }
+                        ]
+                    },
+                    &quot;quantity&quot; : &quot;1612&quot;
+                }
+            ],
+            &quot;currentPackingParameters&quot; : {
+                &quot;businessStrategyParameters&quot; : {
+                    &quot;packDefinitions&quot; : {
+                        &quot;outPacks&quot; : 3,
+                        &quot;globalPdLimit&quot; : 10,
+                        &quot;globalSinglePdLimit&quot; : 10,
+                        &quot;globalMultiPdLimit&quot; : 2,
+                        &quot;sizeSinglePdLimit&quot; : 2,
+                        &quot;sizeMultiPdLimit&quot; : 2,
+                        &quot;minPdUse&quot; : 1,
+                        &quot;minPdUseUnitsPerc&quot; : 0.05
+                    },
+                    &quot;minMaxContribution&quot; : {
+                        &quot;minPercBulk&quot; : 0,
+                        &quot;maxPercBulk&quot; : 1,
+                        &quot;minPercSingle&quot; : 0,
+                        &quot;maxPercSingle&quot; : 1,
+                        &quot;minPercMulti&quot; : 0,
+                        &quot;maxPercMulti&quot; : 1,
+                        &quot;maxFullCarton&quot; : 10000,
+                        &quot;minFullCarton&quot; : 0,
+                        &quot;minPercUnitsFullCarton&quot; : 0,
+                        &quot;maxPercUnitsFullCarton&quot; : 1
+                    },
+                    &quot;packAllowance&quot; : {
+                        &quot;initialFlowBulkPdAllow&quot; : true,
+                        &quot;initialFlowSinglePdAllow&quot; : true,
+                        &quot;initialFlowMultiPdAllow&quot; : true,
+                        &quot;initialFlowAssortedPdAllow&quot; : false,
+                        &quot;replenishmentBulkPdAllow&quot; : true,
+                        &quot;replenishmentSinglePdAllow&quot; : true,
+                        &quot;replenishmentMultiPdAllow&quot; : true,
+                        &quot;replenishmentAssortedPdAllow&quot; : false
+                    }
+                },
+                &quot;objectiveFunctionParameters&quot; : {
+                    &quot;concurrency&quot; : {
+                        &quot;maxConcMulti&quot; : 2,
+                        &quot;maxConcAssort&quot; : 10,
+                        &quot;maxConcVisMin&quot; : 3
+                    },
+                    &quot;cost&quot; : {
+                        &quot;costBoxShip&quot; : 80,
+                        &quot;costPdShip&quot; : 10,
+                        &quot;costQuantityPackShip&quot; : 25,
+                        &quot;costFlexOrEfficShip&quot; : 100,
+                        &quot;costVisMinShip&quot; : 10,
+                        &quot;costBoxHand&quot; : 15,
+                        &quot;costPdHand&quot; : 15,
+                        &quot;costQuantityPackHand&quot; : 100,
+                        &quot;costFlexOrEfficHand&quot; : 100,
+                        &quot;costVisMinHand&quot; : 10,
+                        &quot;costBoxStore&quot; : 5,
+                        &quot;costPdStore&quot; : 10,
+                        &quot;costQuantityPackStore&quot; : 100,
+                        &quot;costFlexOrEfficStore&quot; : 100,
+                        &quot;costVisMinStore&quot; : 100,
+                        &quot;costFullCartonStore&quot; : 2.8,
+                        &quot;businessCostQtyBox&quot; : 1,
+                        &quot;businessCostQtyPack&quot; : 1,
+                        &quot;businessCostQtyPd&quot; : 1,
+                        &quot;businessCostVisMin&quot; : 1,
+                        &quot;costFullCartonRel&quot; : -0.35
+                    },
+                    &quot;optimization&quot; : {
+                        &quot;overshippingTolerance&quot; : 0,
+                        &quot;undershippingTolerance&quot; : 0
+                    },
+                    &quot;other&quot; : {
+                        &quot;epsilon&quot; : 0.01,
+                        &quot;alphaFactor&quot; : 2,
+                        &quot;betaFactor&quot; : 0.5,
+                        &quot;biasCorrection&quot; : 0.026
+                    },
+                    &quot;restrictions&quot; : {
+                        &quot;restrCapacSingle&quot; : false,
+                        &quot;restrCapacMulti&quot; : true,
+                        &quot;restrCapacAssort&quot; : true,
+                        &quot;restrPackDefVisMin&quot; : false,
+                        &quot;allowPackDefVisMin&quot; : false
+                    },
+                    &quot;weight&quot; : {
+                        &quot;dcHandWeight&quot; : 5,
+                        &quot;storeHandWeight&quot; : 1,
+                        &quot;shipWeight&quot; : 1,
+                        &quot;flexOverEffic&quot; : true
+                    }
+                },
+                &quot;supplyChainStratParameters&quot; : {
+                    &quot;boxUpperLimit&quot; : 10,
+                    &quot;fullCartonSize&quot; : 7
+                },
+                &quot;complexityControlThriftParameters&quot; : {
+                    &quot;complexityThreshold&quot; : NumberLong(20000),
+                    &quot;reductionMaxPd&quot; : 20,
+                    &quot;reductionMaxStores&quot; : 5,
+                    &quot;preferenceReductionFactor&quot; : 10,
+                    &quot;concurrenceReductionFactor&quot; : 20,
+                    &quot;sizeReductionFactor&quot; : 10
+                }
+            }
+        }
+    },
+    &quot;events&quot; : [ 
+        {
+            &quot;_id&quot; : &quot;9017b7c0-799a-485c-af70-f5a6e2a57efa&quot;,
+            &quot;domainEvent&quot; : &quot;RECEIPT_WAS_CREATED&quot;,
+            &quot;eventState&quot; : &quot;PUBLISHED&quot;
+        }
+    ],
+    &quot;createDate&quot; : ISODate(&quot;2015-07-13T16:18:57.507Z&quot;),
+    &quot;updatedDate&quot; : ISODate(&quot;2015-07-13T16:19:00.817Z&quot;)
+}
+)</stringProp>
+        </MongoScriptSampler>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Loading receipts" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">300</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">30</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1436798086000</longProp>
+        <longProp name="ThreadGroup.end_time">1436798086000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="offset" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">0</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">offset</stringProp>
+              </elementProp>
+              <elementProp name="limit" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">10</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">limit</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/planning-service/planning/receipts/paginate</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+          <collectionProp name="Asserion.test_strings">
+            <stringProp name="968203154">&quot;httpStatus&quot; : 200</stringProp>
+          </collectionProp>
+          <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+          <boolProp name="Assertion.assume_success">false</boolProp>
+          <intProp name="Assertion.test_type">2</intProp>
+        </ResponseAssertion>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>false</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <hostname>true</hostname>
+            <threadCounts>true</threadCounts>
+            <sampleCount>true</sampleCount>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>false</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <hostname>true</hostname>
+            <threadCounts>true</threadCounts>
+            <sampleCount>true</sampleCount>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
